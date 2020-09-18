@@ -29,13 +29,21 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 
 import ikbal.mulalic.reflektor.model.Report;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-public class MojePrijaveFragment extends Fragment {
+public class MojePrijaveFragment extends Fragment implements RecyclerViewMyReportsAdapter.OnItemClick {
 
     private ArrayList<Report> listOfReports;
     private View view;
@@ -66,7 +74,7 @@ public class MojePrijaveFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
+        Log.d("Naser","Abdelilah");
     }
 
     @Override
@@ -89,18 +97,12 @@ public class MojePrijaveFragment extends Fragment {
 
         listOfReports = new ArrayList<>();
         recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerViewMyReportsAdapter = new RecyclerViewMyReportsAdapter(getContext(),listOfReports);
+        recyclerViewMyReportsAdapter = new RecyclerViewMyReportsAdapter(getContext(),listOfReports,this);
         recyclerView.setAdapter(recyclerViewMyReportsAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         checkSharedReferences();
 
-
-
-
-
-        /*System.out.println(sharedPreferences.getString("0",""));
-        System.out.println(sharedPreferences.getString("1",""));*/
         return view;
     }
     @Override
@@ -113,41 +115,35 @@ public class MojePrijaveFragment extends Fragment {
 
 
         int i = 0;
-        JSONObject jsonObject;
         JSONParser jsonParser = new JSONParser();
         while (true)
         {
             String x = sharedPreferences.getString(String.valueOf(i),"");
-            System.out.println("Rifat" + x);
             if(x == null || x.equals(""))
             {
-                System.out.println("Nema nista u sharedpreferences");
                 break;
             }
             try {
-                System.out.println("Semira");
-                jsonObject = (JSONObject) jsonParser.parse(x);
-                System.out.println("selma" + jsonObject);
-                report = new Report();
-                report.setCategoryOfReport(jsonObject.get("category").toString());
-                report.setLocationOfReport(jsonObject.get("location").toString());
-                report.setDescriptionOfReport(jsonObject.get("description").toString());
-                report.setPhotoPathReport(jsonObject.get("photoPath").toString());
-                if (jsonObject.get("videoPath").toString() != null) {
-                    report.setVideoPathReport(jsonObject.get("videoPath").toString());
-                }
-                if (jsonObject.get("realLocation").toString() != null) {
-                    report.setRealLocationOfReport(jsonObject.get("realLocation").toString());
-                }
-                listOfReports.add(report);
-                recyclerViewMyReportsAdapter.notifyDataSetChanged();
-                System.out.println(report.getCategoryOfReport());
-                System.out.println(report.getLocationOfReport());
-                System.out.println(report.getDescriptionOfReport());
-                System.out.println(report.getPhotoPathReport());
-                //System.out.println(report.getVideoPathReport());
-                System.out.println(report.getRealLocationOfReport());
 
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(x);
+                report = new Report();
+                report.setSent((Boolean) jsonObject.get("isSent"));
+                report.setCreatedAt((String) jsonObject.get("createdAt"));
+                report.setCategoryOfReport((String) jsonObject.get("category"));
+                report.setLocationOfReport((String) jsonObject.get("location"));
+                report.setDescriptionOfReport((String) jsonObject.get("description"));
+                report.setPhotoPathReport((String) jsonObject.get("imageName"));
+
+                if (jsonObject.get("videoPath") != null) {
+                    report.setVideoPathReport((String) jsonObject.get("videoName"));
+                }
+                if (jsonObject.get("realLocation") != null) {
+                    report.setRealLocationOfReport((String) jsonObject.get("realLocation"));
+                }
+                report.setPosition(i);
+                report.setString(x);
+
+                listOfReports.add(report);
                 i++;
 
             } catch (ParseException e) {
@@ -156,14 +152,108 @@ public class MojePrijaveFragment extends Fragment {
 
 
         }
+
+        recyclerViewMyReportsAdapter.notifyDataSetChanged();
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.prijava_knjiga) {
-            Toast.makeText(getActivity(), "Clicked on " + item.getTitle(), Toast.LENGTH_SHORT)
-                    .show();
+            Intent secondIntent = new Intent(getActivity(),InstructionsActivity.class);
+            startActivity(secondIntent);
         }
         return true;
     }
 
+    @Override
+    public void sendAgain(final int position) {
+
+        final OkHttpClient client = new OkHttpClient();
+        final JSONObject jsonObject = (JSONObject) JSONValue.parse(listOfReports.get(position).getString());
+        final String url = "https://reflektor.live/reports/create";
+        final MediaType JSON
+                = MediaType.parse("image/png");
+
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+                    MultipartBody.Builder multiPartBody = new MultipartBody.Builder()
+                            .addFormDataPart("report", jsonObject.toJSONString());
+                    if( jsonObject.get("imageName")!= null && !((String)jsonObject.get("imageName")).equals("null"))
+                    {
+                        multiPartBody.addFormDataPart("Content-Type", "image/png")
+                                .addFormDataPart("image", UUID.randomUUID().toString() + ".png",
+                                        RequestBody.create(JSON, new File((String) jsonObject.get("imageName"))));
+                    }
+                    if ( jsonObject.get("videoName")!= null && !((String)jsonObject.get("videoName")).equals("null"))
+
+                    {
+                        multiPartBody.addFormDataPart("Content-Type", "video/mp4")
+                                .addFormDataPart("video",UUID.randomUUID().toString() + ".mp4",RequestBody.create(JSON, new File((String) jsonObject.get("videoName"))));
+                    }
+
+                    RequestBody requestBody = multiPartBody.build();
+
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .header("Content-Type", "multipart/form-data;")
+                            .post(requestBody)
+                            .build();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "Slanje u toku...", Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+                    try  {
+                        Response response = client.newCall(request).execute();
+                        if (!response.isSuccessful()) {
+                            jsonObject.put("isSent",false);
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity(), "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            jsonObject.put("isSent",true);
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity(), "Uspjesno kreirana prijava", Toast.LENGTH_SHORT).show();
+                                    editor.putString(String.valueOf(listOfReports.get(position).getPosition()), jsonObject.toJSONString());
+                                    editor.apply();
+                                    listOfReports.get(position).setSent(true);
+                                    recyclerViewMyReportsAdapter.notifyDataSetChanged();
+                                }
+                            });
+                        }
+
+                    }
+                    catch (IOException e)
+                    {
+                        jsonObject.put("isSent",false);
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+
+    }
 }

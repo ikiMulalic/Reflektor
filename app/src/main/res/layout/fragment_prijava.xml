@@ -23,28 +23,48 @@
                 android:background="#DCDCDC"
                 android:orientation="horizontal">
 
-                <ImageButton
-                    android:id="@+id/fotografijaButton"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                <RelativeLayout
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:layout_marginLeft="45dp"
                     android:layout_marginTop="25dp"
                     android:layout_marginRight="20dp"
                     android:layout_marginBottom="25dp"
-                    android:background="@drawable/rounded_button_for_cameras"
-                    android:src="@drawable/ikbal_photo" />
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button_for_cameras">
 
-                <ImageButton
-                    android:id="@+id/videoButton"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                    <ImageButton
+                        android:id="@+id/fotografijaButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+
+                        android:layout_marginTop="26dp"
+                        android:layout_marginBottom="26dp"
+                        android:layout_marginLeft="32dp"
+                        android:layout_marginRight="26dp"
+                        android:src="@drawable/ikbal_photo" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="25dp"
                     android:layout_marginRight="50dp"
                     android:layout_marginBottom="25dp"
-                    android:background="@drawable/rounded_button_for_cameras"
-                    android:src="@drawable/ikbal_video" />
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button_for_cameras">
 
+                    <ImageButton
+                        android:id="@+id/videoButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="26dp"
+                        android:layout_marginBottom="26dp"
+                        android:layout_marginLeft="32dp"
+                        android:layout_marginRight="26dp"
+                        android:src="@drawable/ikbal_video" />
+                </RelativeLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -94,7 +114,7 @@
 
                 <EditText
                     android:id="@+id/opisPrijaveEditText"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
                     android:layout_marginTop="20dp"
@@ -113,7 +133,7 @@
 
                 <EditText
                     android:id="@+id/lokacijaEditText"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
                     android:layout_marginTop="20dp"
@@ -150,39 +170,23 @@
                     android:layout_marginTop="20dp"
                     android:visibility="gone" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
+                <Button
+                    android:id="@+id/posaljiButton"
+                    android:layout_width="200dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="40dp"
                     android:layout_marginBottom="20dp"
-                    android:background="@android:color/transparent"
-                    android:orientation="horizontal">
-
-                    <ImageButton
-                        android:id="@+id/snimiButton"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="30dp"
-                        android:background="@android:color/transparent"
-                        android:padding="4dp"
-                        android:src="@drawable/download" />
-
-                    <Button
-                        android:id="@+id/posaljiButton"
-                        android:layout_width="200dp"
-                        android:layout_height="40dp"
-                        android:layout_marginLeft="20dp"
-                        android:background="@drawable/simple_rounded_button_outline"
-                        android:drawableLeft="@drawable/send"
-                        android:paddingLeft="12dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp"
-                        android:text="Pošalji"
-                        android:textColor="@android:color/white"
-                        android:textSize="14sp"
-                        android:textStyle="normal" />
-                </LinearLayout>
+                    android:background="@drawable/simple_rounded_button_outline"
+                    android:drawableLeft="@drawable/send"
+                    android:paddingLeft="12dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:text="Pošalji"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="normal" />
 
             </LinearLayout>
 

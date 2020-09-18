@@ -9,6 +9,61 @@ public class Report {
     private String photoPathReport;
     private String videoPathReport;
     private String realLocationOfReport;
+    private String createdAt;
+    private String locationCode;
+    private String userId;
+    private int position;
+    private String string;
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public String getString() {
+        return string;
+    }
+
+    public void setString(String string) {
+        this.string = string;
+    }
+
+    public boolean isSent() {
+        return isSent;
+    }
+
+    public void setSent(boolean sent) {
+        isSent = sent;
+    }
+
+    private boolean isSent;
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getLocationCode() {
+        return locationCode;
+    }
+
+    public void setLocationCode(String locationCode) {
+        this.locationCode = locationCode;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getRealLocationOfReport() {
         return realLocationOfReport;
@@ -58,10 +113,7 @@ public class Report {
     }
 
     public void setPhotoPathReport(String photoPathReport) {
-        if(photoPathReport == null)
-        {
-            this.photoPathReport = null;
-        }
+
         this.photoPathReport = photoPathReport;
     }
 
@@ -71,10 +123,7 @@ public class Report {
     }
 
     public void setVideoPathReport(String videoPathReport) {
-        if(videoPathReport == null)
-        {
-            this.videoPathReport = null;
-        }
+
         this.videoPathReport = videoPathReport;
     }
 

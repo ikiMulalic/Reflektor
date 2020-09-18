@@ -49,56 +49,40 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button cameraButton,posaljiButton;
-    private EditText nazivPrijaveEditText,opisPrijaveEditText,lokacijaEditText;
-    private Spinner spinner;
-    private ArrayAdapter <String> spinnerAdapter;
-    private ArrayList<String> listOfItems;
-    private ImageView imageView;
-    private VideoView videoView;
-
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int REQUEST_VIDEO_CAPTURE = 1;
-
-    private LinearLayout slideLayoutConstraint;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private TabItem prijava,mojePrijave;
     private ViewPager viewPager;
     private PageAdapter pageAdapter;
-    private Bitmap bitmap;
     private GpsTracker gpsTracker;
-
+    private Bitmap bitmap;
     public static double getLatitude;
     public static double getLongitude;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*if(savedInstanceState!=null)
-        {
-            videoView.setVideoPath(savedInstanceState.getString("putVidea",""));
-            videoView.setVisibility(View.VISIBLE);
-            videoView.start();
-        }*/
 
         try {
             if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            || ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    || ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.CAMERA, WRITE_EXTERNAL_STORAGE }, 101);
+                //Toast.makeText(this, "Aplikaciji mora pristupiti Lokaciji, kameri i pohrani", Toast.LENGTH_SHORT).show();
+                getLocation();
+            }
+            else
+            {
 
             }
         } catch (Exception e){
             e.printStackTrace();
         }
 
+        System.out.println(MainActivity.getLatitude + " " + MainActivity.getLongitude);
 
-
-        getLocation();
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(getResources().getString(R.string.app_name));
         setSupportActionBar(toolbar);
@@ -135,10 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getLocation(){
 
-       /* if(ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, WRITE_EXTERNAL_STORAGE }, 0);
-        }*/
+
         gpsTracker = new GpsTracker(MainActivity.this);
         if(gpsTracker.canGetLocation()){
             getLatitude = gpsTracker.getLatitude();
@@ -150,23 +131,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    /*@Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            System.out.println("Huuuuuuuuuusain");
-            Bundle extras = data.getExtras();
-            bitmap = (Bitmap) extras.get("output");
-            //imageView.setImageBitmap(bitmap);
-            //imageView.setVisibility(View.VISIBLE);
-            System.out.println("=========================================================/1");
-            saveImage();
-        }
-    }*/
-
-    /////////////////////////////////////////////// hussain
 
 
     private void takeScreenshot() {
@@ -194,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void saveImage() {
+   /* public void saveImage() {
         System.out.println("========================================================0");
         if (checkPermission()) {
             takeScreenshot();
@@ -203,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             requestPermission();
         }
 
-    }
+    }*/
 
     private void requestPermission() {
         ActivityCompat.requestPermissions(this, new
@@ -216,11 +180,11 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 2:
                 if (grantResults.length> 0) {
-                    boolean StoragePermission = grantResults[0] ==
+                    boolean LocationPermission = grantResults[0] ==
                             PackageManager.PERMISSION_GRANTED;
 
-                    if (StoragePermission) {
-                        takeScreenshot();
+                    if (LocationPermission) {
+                        getLocation();
                     } else {
                         finish();
                     }

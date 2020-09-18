@@ -1,17 +1,23 @@
 package ikbal.mulalic.reflektor;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
 public class IntroActivity extends AppCompatActivity {
 
     SharedPreferences pref = null;
-    private static int SPLASH_TIME_OUT = 2000;
+    private static int SPLASH_TIME_OUT = 1750;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +36,7 @@ public class IntroActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+
                 if(pref.getBoolean("firstrun", true))
                 {
                     //prvi put
@@ -49,4 +56,5 @@ public class IntroActivity extends AppCompatActivity {
 
 
     }
+
 }

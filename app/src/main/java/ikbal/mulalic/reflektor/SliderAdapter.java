@@ -22,10 +22,10 @@ public class SliderAdapter extends PagerAdapter {
     }
 
 
-    public String[] slide_headings = {"Zahvaljujemo što koristite Reflektor i pomažete da rasvijetlimo izborne nepravilnosti!",
-            "Podnošenje prijave","Postupanje sa prijavama","Zaštita podataka","O aplikaciji"};
+    public String[] slide_headings = {"Podnošenje prijave","Postupanje sa prijavama","Zaštita podataka","O aplikaciji","Zahvaljujemo što koristite Reflektor i pomažete da rasvijetlimo izborne nepravilnosti!"};
 
-    public String[] slide_descs = {"",
+    public String[] slide_descs = {
+
             "Novu prijavu korisnik podnosi na sljedeći način:\n" +
                     "1. Dodirom na fotoaparat ili videokameru, kako bi korisnik kreirao novu fotografiju ili video zapis\n" +
                     "2. Izbor kategorija – klikom na svaku od kategorija korisnik saznaje šta ista podrazumijeva\n" +
@@ -34,25 +34,25 @@ public class SliderAdapter extends PagerAdapter {
                     "5. Pošalji – potvrda o slanju",
 
 
-            "Nakon zaprimanja prijava, TI BIH će proslijediti dio prijava koji su zakonski regulisane \n " +
-                    "nadležnim institucijama na dalje postupanje. Imajući u vidu da u Bosni i Hercegovini još uvijek \n" +
-                    " nije zakonski regulisana zloupotreba javnih resursa u svrhu predizborne promocije,\n " +
-                    " dio prikupljenih prijava služiće kao osnov za dalje zagovaranje za izmjenu \n " +
-                    "I ukazivanje na neophodnost regulisanja zakonskog okvira. ",
+            "Nakon zaprimanja prijava, TI BIH će proslijediti dio prijava koji su zakonski regulisane " +
+                    "nadležnim institucijama na dalje postupanje. Imajući u vidu da u Bosni i Hercegovini još uvijek " +
+                    " nije zakonski regulisana zloupotreba javnih resursa u svrhu predizborne promocije, " +
+                    " dio prikupljenih prijava služiće kao osnov za dalje zagovaranje za izmjenu " +
+                    "i ukazivanje na neophodnost regulisanja zakonskog okvira. ",
 
-            "Mobilna aplikacija „Reflektor“ ne prikuplja i ne pohranjuje podatke od korisnika aplikacije. \n" +
-                    "Korisnici aplikacije koriste aplikaciju bez registracije i ne prosljeđuju svoje lične podatke kroz aplikaciju. \n" +
-                    "Sve prijave proslijeđene putem aplikacije su potpuno anonimne. \n",
+            "Mobilna aplikacija „Reflektor“ ne prikuplja i ne pohranjuje podatke od korisnika aplikacije." +
+                    "Korisnici aplikacije koriste aplikaciju bez registracije i ne prosljeđuju svoje lične podatke kroz aplikaciju." +
+                    "Sve prijave proslijeđene putem aplikacije su potpuno anonimne.",
 
-            "Udruženje za borbu protiv korupcije „Transprency International“ u BiH (TI BIH) \n"  +
-                    "razvilo je mobilnu aplikaciju kroz projekat “Podrška građanima u borbi protiv korupcije, \n”" +
-                    " koji je finansijski podržan od strane Američke agencije za međunarodni razvoj (USAID), \n" +
-                    " a koji implementira zajedno sa partnerskim organizacijama Centri civilnih inicijativa \n" +
-                    "i Centrom za razvoj medija i analize. \n" +
-                    "Cilj aplikacije je izvještavanje građana u realnom vremenu o evenutalnim zloupotrebama javnih sredstava \n" +
+            "Udruženje za borbu protiv korupcije „Transprency International“ u BiH (TI BIH) "  +
+                    "razvilo je mobilnu aplikaciju kroz projekat “Podrška građanima u borbi protiv korupcije,”" +
+                    " koji je finansijski podržan od strane Američke agencije za međunarodni razvoj (USAID)," +
+                    " a koji implementira zajedno sa partnerskim organizacijama Centri civilnih inicijativa" +
+                    "i Centrom za razvoj medija i analize." +
+                    "Cilj aplikacije je izvještavanje građana u realnom vremenu o evenutalnim zloupotrebama javnih sredstava" +
                     "i javnih funkcija u svrhu izborne kampanje i nepravilnostima koje se pojavljuju u toku izborne kampanje.",
 
-
+            ""
     };
 
 

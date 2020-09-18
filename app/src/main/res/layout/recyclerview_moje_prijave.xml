@@ -15,9 +15,9 @@
         <ImageView
             android:id="@+id/recordedPhotoImageView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_marginLeft="6dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
             android:layout_marginRight="6dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="2"
@@ -69,16 +69,6 @@
             android:layout_marginRight="6dp"
             android:layout_weight="2"
             android:orientation="vertical">
-
-            <ImageButton
-                android:id="@+id/deleteReportButton"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="25dp"
-                android:layout_marginTop="30dp"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:src="@drawable/trash_can" />
 
             <ImageButton
                 android:id="@+id/sendReportButton"
