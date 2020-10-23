@@ -1,31 +1,29 @@
 package ikbal.mulalic.reflektor;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.location.Location;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
-import android.preference.PreferenceManager;
+import android.os.Looper;
 import android.provider.MediaStore;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,47 +37,41 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-/*import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;*/
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
 
-import org.json.JSONException;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 
 import ikbal.mulalic.reflektor.model.Report;
-import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class PrijavaFragment extends Fragment{
 
@@ -116,7 +108,11 @@ public class PrijavaFragment extends Fragment{
     private boolean checkIfFormIsValid = false;
     private boolean isSent = false;
 
-    private String finalNewVideoPath;
+    private static final int REQUEST_CHECK_SETTINGS = 100;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
 
 
 
@@ -128,33 +124,6 @@ public class PrijavaFragment extends Fragment{
         PrijavaFragment fragment = new PrijavaFragment();
         Bundle args = new Bundle();
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-       /* if(savedInstanceState != null)
-        {
-            savedInstanceState.getString("kategorija","");
-            savedInstanceState.getString("lokacija","");
-            savedInstanceState.getString("putSlike","");
-            savedInstanceState.getString("putVidea","");
-            videoView.setVideoPath(savedInstanceState.getString("putVidea",""));
-            videoView.setVisibility(View.VISIBLE);
-            videoView.start();
-
-        }*/
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-/*
-        outState.putString("kategorija",categoryText);
-        outState.putString("lokacija",locationText);
-        outState.putString("putSlike",currentPhotoPath);
-        outState.putString("putVidea",currentVideoPath);*/
     }
 
     @Override
@@ -393,184 +362,262 @@ public class PrijavaFragment extends Fragment{
             }
         });
 
-        /*SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-        final String date = dateFormat.format(new Date());*/
         listOfReports = new ArrayList<>();
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(!checkForm())
-                {
+                if (!checkForm()) {
                     Toast.makeText(getActivity(), "Forma mora sadrzavati kategoriju i sliku ili video", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                String categoryText = spinner.getSelectedItem().toString();
-                String descriptionText = opisPrijaveEditText.getText().toString();
-                String locationText = lokacijaEditText.getText().toString();
-                String realLocation = MainActivity.getLatitude + "," + MainActivity.getLongitude;
-
-
-                 final String url = "https://reflektor.live/reports/create";
-
-                final JSONObject jsonObject = new JSONObject();
-                jsonObject.put("category",categoryText);
-                jsonObject.put("createdAt",new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-                jsonObject.put("description",descriptionText);
-                jsonObject.put("id", UUID.randomUUID().toString());
-                jsonObject.put("imageName",currentPhotoPath);
-                jsonObject.put("location",locationText);
-                jsonObject.put("locationCode",realLocation);
-                jsonObject.put("userId","istoNekiString");
-                jsonObject.put("videoName",currentVideoPath);
-
-
-                new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try  {
-                            //Your code goes here
-                            MultipartBody.Builder multiPartBody = new MultipartBody.Builder()
-                                    .addFormDataPart("report", jsonObject.toJSONString());
-                            if(currentPhotoPath != null)
-                            {
-                                multiPartBody.addFormDataPart("Content-Type", "image/png")
-                                        .addFormDataPart("image", UUID.randomUUID().toString() + ".png",
-                                                RequestBody.create(JSON, new File(currentPhotoPath)));
-                            }
-                            if (currentVideoPath != null)
-
-                            {
-                                multiPartBody.addFormDataPart("Content-Type", "video/mp4")
-                                        .addFormDataPart("video",UUID.randomUUID().toString() + ".mp4",RequestBody.create(JSON, new File(currentVideoPath)));
-                            }
-
-                            RequestBody requestBody = multiPartBody.build();
-
-                            Request request = new Request.Builder()
-                                    .url(url)
-                                    .header("Content-Type", "multipart/form-data;")
-                                    .post(requestBody)
-                                    .build();
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    sendButton.setEnabled(false);
-                                    Toast.makeText(context, "Slanje u toku...", Toast.LENGTH_SHORT).show();
-                                    resetData();
-                                }
-                            });
-                            final OkHttpClient client = new OkHttpClient();
-                            try  {
-                                Response response = client.newCall(request).execute();
-                                if (!response.isSuccessful()) {
-                                    jsonObject.put("isSent",false);
-                                    int i = 0;
-
-                                    while (true) {
-                                        String x = sharedPreferences.getString(i + "", "");
-                                        if (x == null || x.equals("")) {
-                                            break;
-                                        }
-                                        i++;
-                                    }
-
-                                    editor.putString(String.valueOf(i), jsonObject.toJSONString());
-                                    editor.apply();
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(context, "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
-                                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                                            getActivity().finish();
-                                            getActivity().overridePendingTransition(0, 0);
-                                            startActivity(intent);
-                                            getActivity().overridePendingTransition(0, 0);
-                                            //sendButton.setEnabled(true);
-                                            //resetData();
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    jsonObject.put("isSent",true);
-                                    int i = 0;
-
-                                    while (true) {
-                                        String x = sharedPreferences.getString(i + "", "");
-                                        if (x == null || x.equals("")) {
-                                            break;
-                                        }
-                                        i++;
-                                    }
-
-                                    editor.putString(String.valueOf(i), jsonObject.toJSONString());
-                                    editor.apply();
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(context, "Uspjesno kreirana prijava", Toast.LENGTH_SHORT).show();
-                                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                                            getActivity().finish();
-                                            getActivity().overridePendingTransition(0, 0);
-                                            startActivity(intent);
-                                            getActivity().overridePendingTransition(0, 0);
-                                            //sendButton.setEnabled(true);
-                                            //resetData();
-                                        }
-                                    });
-                                }
-
-                            }
-                            catch (IOException e)
-                            {
-                                jsonObject.put("isSent",false);
-                                int i = 0;
-
-                                while (true) {
-                                    String x = sharedPreferences.getString(i + "", "");
-                                    if (x == null || x.equals("")) {
-                                        break;
-                                    }
-                                    i++;
-                                }
-
-                                editor.putString(String.valueOf(i), jsonObject.toJSONString());
-                                editor.apply();
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-
-                                        Toast.makeText(context, "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                                        getActivity().finish();
-                                        getActivity().overridePendingTransition(0, 0);
-                                        startActivity(intent);
-                                        getActivity().overridePendingTransition(0, 0);
-                                        //sendButton.setEnabled(true);
-                                        //resetData();
-                                    }
-                                });
-
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                }).start();
-
-
-
+                startLocationUpdates();
             }
 
         });
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+        // Location Request
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(1000);
+
+        // Location Callback
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+
+                for (Location location : locationResult.getLocations()) {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+
+                        stopLocationUpdates();
+
+                        sendRequest(latitude, longitude);
+
+                        return;
+                    }
+                }
+            }
+        };
+
+    }
+
+
+    private void sendRequest(double latitude, double longitude) {
+        String categoryText = spinner.getSelectedItem().toString();
+        String descriptionText = opisPrijaveEditText.getText().toString();
+        String locationText = lokacijaEditText.getText().toString();
+        String realLocation = latitude + "," + longitude;
+
+
+        final String url = "https://reflektor.live/reports/create";
+
+        final JSONObject jsonObject = new JSONObject();
+        jsonObject.put("category",categoryText);
+        jsonObject.put("createdAt",new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        jsonObject.put("description",descriptionText);
+        jsonObject.put("id", UUID.randomUUID().toString());
+        jsonObject.put("imageName",currentPhotoPath);
+        jsonObject.put("location",locationText);
+        jsonObject.put("locationCode",realLocation);
+        jsonObject.put("userId","istoNekiString");
+        jsonObject.put("videoName",currentVideoPath);
+
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+                    MultipartBody.Builder multiPartBody = new MultipartBody.Builder();
+
+                    multiPartBody.addFormDataPart("report", jsonObject.toJSONString());
+                    if(currentPhotoPath != null)
+                    {
+                        multiPartBody.addFormDataPart("Content-Type", "image/png")
+                                .addFormDataPart("image", UUID.randomUUID().toString() + ".png",
+                                        RequestBody.create(JSON, new File(currentPhotoPath)));
+                    }
+                    if (currentVideoPath != null)
+
+                    {
+                        multiPartBody.addFormDataPart("Content-Type", "video/mp4")
+                                .addFormDataPart("video",UUID.randomUUID().toString() + ".mp4",RequestBody.create(JSON, new File(currentVideoPath)));
+                    }
+
+                    RequestBody requestBody = multiPartBody.build();
+
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .header("Content-Type", "multipart/form-data;")
+                            .post(requestBody)
+                            .build();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sendButton.setEnabled(false);
+                            Toast.makeText(context, "Slanje u toku...", Toast.LENGTH_SHORT).show();
+                            //resetData();
+                        }
+                    });
+                    final OkHttpClient client = new OkHttpClient();
+                    try  {
+                        Response response = client.newCall(request).execute();
+                        if (!response.isSuccessful()) {
+                            jsonObject.put("isSent",false);
+                            int i = 0;
+
+                            while (true) {
+                                String x = sharedPreferences.getString(i + "", "");
+                                if (x == null || x.equals("")) {
+                                    break;
+                                }
+                                i++;
+                            }
+
+                            editor.putString(String.valueOf(i), jsonObject.toJSONString());
+                            editor.apply();
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                    getActivity().finish();
+                                    getActivity().overridePendingTransition(0, 0);
+                                    startActivity(intent);
+                                    getActivity().overridePendingTransition(0, 0);
+                                    //sendButton.setEnabled(true);
+                                    //resetData();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            jsonObject.put("isSent",true);
+                            int i = 0;
+
+                            while (true) {
+                                String x = sharedPreferences.getString(i + "", "");
+                                if (x == null || x.equals("")) {
+                                    break;
+                                }
+                                i++;
+                            }
+
+                            editor.putString(String.valueOf(i), jsonObject.toJSONString());
+                            editor.apply();
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "Uspjesno kreirana prijava", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                    getActivity().finish();
+                                    getActivity().overridePendingTransition(0, 0);
+                                    startActivity(intent);
+                                    getActivity().overridePendingTransition(0, 0);
+                                    //sendButton.setEnabled(true);
+                                    //resetData();
+                                }
+                            });
+                        }
+
+                    }
+                    catch (IOException e)
+                    {
+                        jsonObject.put("isSent",false);
+                        int i = 0;
+
+                        while (true) {
+                            String x = sharedPreferences.getString(i + "", "");
+                            if (x == null || x.equals("")) {
+                                break;
+                            }
+                            i++;
+                        }
+
+                        editor.putString(String.valueOf(i), jsonObject.toJSONString());
+                        editor.apply();
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                Toast.makeText(context, "Doslo je do greske, prijava je sacuvana u \"Moje prijave\"", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getActivity(), MainActivity.class);
+                                getActivity().finish();
+                                getActivity().overridePendingTransition(0, 0);
+                                startActivity(intent);
+                                getActivity().overridePendingTransition(0, 0);
+                            }
+                        });
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(locationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check is GPS ON
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getActivity());
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+                .addOnSuccessListener(getActivity(), locationSettingsResponse -> {
+                    // If GPS is ON, then start getting location.
+                    Toast.makeText(getActivity(), "U toku je potražnja Vaše lokacije...", Toast.LENGTH_LONG).show();
+                    fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                })
+                .addOnFailureListener(getActivity(), e -> {
+
+                    int statusCode = ((ApiException) e).getStatusCode();
+                    switch (statusCode) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                // Open a dialog to ask the user to turn GPS on.
+                                ResolvableApiException rae = (ResolvableApiException) e;
+                                rae.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
+
+                            } catch (IntentSender.SendIntentException sie) {
+                                Toast.makeText(getActivity(), "Uklučite Vaš GPS da bi mogli kreirati hitan slucaj!", Toast.LENGTH_LONG).show();
+                                getActivity().finish();
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            Toast.makeText(getActivity(), "Uklučite Vaš GPS da bi mogli kreirati hitan slucaj!", Toast.LENGTH_LONG).show();
+                            getActivity().finish();
+                    }
+
+                });
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
     public boolean checkForm()
@@ -579,17 +626,6 @@ public class PrijavaFragment extends Fragment{
             return true;
         else
              return false;
-    }
-
-    private void resetData()
-    {
-        spinner.setSelection(0);
-        opisPrijaveEditText.setText("");
-        lokacijaEditText.setText("");
-        currentPhotoPath = null;
-        currentVideoPath = null;
-        imageView.setVisibility(View.GONE);
-        videoView.setVisibility(View.GONE);
     }
 
     @Override
@@ -606,30 +642,38 @@ public class PrijavaFragment extends Fragment{
         return true;
     }
 
-
-    //@RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_TAKE_PHOTO && resultCode == getActivity().RESULT_OK)
+
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+
+                    if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                            ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    Toast.makeText(getActivity(), "U toku je potražnja Vaše lokacije...", Toast.LENGTH_LONG).show();
+                    fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                    break;
+
+                case Activity.RESULT_CANCELED:
+                    Toast.makeText(getActivity(), "Ne možete kreirati hitan slučaj bez lokacije!", Toast.LENGTH_LONG).show();
+                    getActivity().finish();
+                    break;
+            }
+        } else if(requestCode == REQUEST_TAKE_PHOTO && resultCode == getActivity().RESULT_OK)
         {
                 File neki = compressImageAndOverride(nekakav,currentPhotoPath);
                 Bitmap bitmap = BitmapFactory.decodeFile(neki.getAbsolutePath());
                 imageView.setImageBitmap(bitmap);
                 imageView.setVisibility(View.VISIBLE);
-                    /*Path  filePath = Paths.get(neki.getAbsolutePath());
-                    FileChannel fileChannel;
-                try {
-                    fileChannel = FileChannel.open(filePath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                ]*/
         }
 
         else if(requestCode == REQUEST_VIDEO_CAPTURE && resultCode == getActivity().RESULT_OK)
         {
-            //compressAndUploadVideo(currentVideoPath);
             videoView.setVideoPath(currentVideoPath);
             videoView.setVisibility(View.VISIBLE);
             videoView.start();
@@ -738,72 +782,5 @@ public class PrijavaFragment extends Fragment{
             return null;
         }
     }
-
-   /*// private void compressAndUploadVideo(final String inputVideoPath){
-        final FFmpeg ffmpeg = FFmpeg.getInstance(getActivity());
-        try {
-            //Load the binary
-            ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
-                @Override
-                public void onStart() {
-                }
-                @Override
-                public void onFailure() {
-                }
-                @Override
-                public void onSuccess() {
-                }
-                @Override
-                public void onFinish() {
-                }
-            });
-        } catch (FFmpegNotSupportedException e) {
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    String newVideoPath = inputVideoPath;
-                    int pathLength = newVideoPath.length();
-                    for (int i = pathLength - 1; i > 0; i--){
-                        if (newVideoPath.charAt(i) == '.'){
-                            newVideoPath = newVideoPath.substring(0 , i) + ".mp4";
-                        }
-                    }
-                    String[] commandArray = new String[]{};
-                    commandArray = new String[]{"-y", "-i", inputVideoPath, "-s", "720x480", "-r", "25",
-                            "-vcodec", "libx264", "-b:v", "300k", "-b:a", "48000", "-ac", "2", "-ar", "22050", newVideoPath};
-
-                    finalNewVideoPath = newVideoPath;
-                    ffmpeg.execute(commandArray, new ExecuteBinaryResponseHandler() {
-                        @Override
-                        public void onStart() {
-                        }
-                        @Override
-                        public void onProgress(String message) {
-                        }
-                        @Override
-                        public void onFailure(String message) {
-                        }
-                        @Override
-                        public void onSuccess(String message) {
-                        }
-                        //@RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onFinish() {
-                            File neki = new File(finalNewVideoPath);
-
-                        }
-                    });
-                }
-                catch (Exception e) {
-                    // Handle if FFmpeg is already running
-                }
-            }
-        }).start();*/
-    //}
-
-
 
 }

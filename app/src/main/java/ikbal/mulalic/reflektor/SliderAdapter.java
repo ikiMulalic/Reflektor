@@ -40,7 +40,6 @@ public class SliderAdapter extends PagerAdapter {
                     " dio prikupljenih prijava služiće kao osnov za dalje zagovaranje za izmjenu " +
                     "i ukazivanje na neophodnost regulisanja zakonskog okvira. ",
 
-            "Mobilna aplikacija „Reflektor“ ne prikuplja i ne pohranjuje podatke od korisnika aplikacije." +
                     "Korisnici aplikacije koriste aplikaciju bez registracije i ne prosljeđuju svoje lične podatke kroz aplikaciju." +
                     "Sve prijave proslijeđene putem aplikacije su potpuno anonimne.",
 
