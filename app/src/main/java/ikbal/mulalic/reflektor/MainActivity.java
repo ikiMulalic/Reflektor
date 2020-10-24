@@ -90,29 +90,31 @@ public class MainActivity extends AppCompatActivity {
                     if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "Greska, Niste omogućili korištenje lokacije", Toast.LENGTH_LONG).show();
                         finish();
+                    } else {
+                        checkAndRequestPermissionsForCamera(2);
                     }
                 }
                 break;
 
             case 2:
                 if (grantResults.length > 0) {
-                    if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
+                    if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "Greska, Niste omogućili korištenje kamere", Toast.LENGTH_LONG).show();
                         finish();
+                    }
+                    else {
+                        checkAndRequestPermissionsForData(3);
                     }
                 }
                 break;
             case 3:
                 if (grantResults.length > 0) {
-                    if (grantResults[2] != PackageManager.PERMISSION_GRANTED) {
+                    if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "Greska, Niste omogućili korištenje pohrane", Toast.LENGTH_LONG).show();
                         finish();
                     }
                 }
                 break;
-            default:
-                Toast.makeText(this, "Greska, Niste omogućili korištenje dozvola", Toast.LENGTH_LONG).show();
-                finish();
         }
 
     }
